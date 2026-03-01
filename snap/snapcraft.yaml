@@ -76,7 +76,7 @@ apps:
       - package-run
     environment:
       PYTHONUNBUFFERED: "1"
-      LD_LIBRARY_PATH: $SNAP/lib/python3.10/site-packages/ctrlxdatalayer:$SNAP/usr/lib/x86_64-linux-gnu:$SNAP/usr/lib/aarch64-linux-gnu:$SNAP/usr/lib
+      LD_LIBRARY_PATH: $SNAP/lib
 
 # -----------------------------------------------------------------------
 # Parts: how to build the snap
@@ -93,6 +93,13 @@ parts:
     source: app/
     organize:
       "*": app/
+
+  # Bundle libcomm_datalayer.so (from rexroth-deviceadmin snap on ctrlX OS)
+  libs:
+    plugin: dump
+    source: libs/
+    organize:
+      "*.so": lib/
 
   # Package manifest and assets for ctrlX Store integration
   configs:
