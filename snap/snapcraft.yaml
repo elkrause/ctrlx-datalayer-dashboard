@@ -99,7 +99,7 @@ parts:
     plugin: dump
     source: libs/
     organize:
-      "*.so": lib/
+      "*.so*": lib/
 
   # Package manifest and assets for ctrlX Store integration
   configs:
