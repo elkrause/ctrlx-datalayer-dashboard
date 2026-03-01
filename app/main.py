@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
 """
-ctrlX OS App: Data Layer Reader mit Web-Dashboard
-Liest System-Metriken aus der ctrlX Data Layer und zeigt sie in einer Web-UI.
+ctrlX OS App: Data Layer Reader with Web Dashboard
+Reads system metrics from the ctrlX Data Layer and displays them in a web UI.
 """
 
 import http.server
@@ -58,7 +58,7 @@ NODES_INT = {
 
 
 def _get_connection_string() -> str:
-    """IPC auf Gerät, TCP im Dev-/Simulator-Modus."""
+    """Use IPC on device, TCP in dev/simulator mode."""
     if "SNAP" in os.environ:
         return "ipc://"
     ip       = os.environ.get("DATALAYER_HOST",     "10.0.2.2")
@@ -69,9 +69,9 @@ def _get_connection_string() -> str:
 
 
 def _datalayer_reader():
-    """Hintergrund-Thread: liest Metriken alle 2 Sekunden."""
+    """Background thread: reads metrics every 2 seconds."""
     conn_str = _get_connection_string()
-    print(f"Data Layer: verbinde mit {conn_str}", flush=True)
+    print(f"Data Layer: connecting to {conn_str}", flush=True)
 
     with ctrlxdatalayer.system.System("") as system:
         system.start(False)
@@ -103,114 +103,177 @@ def _datalayer_reader():
         system.stop(False)
 
 # ---------------------------------------------------------------------------
-# HTML-Dashboard
+# HTML Dashboard  — ctrlX OS design system
+#   Colors : #005587 (Bosch Blue), #007bc0 (accent), #fafafa (background)
+#   Font   : Bosch-Sans (falls back to system-ui)
+#   Cards  : white, Material elevation shadow
+#   Header : Bosch supergraphic gradient band + dark blue toolbar
 # ---------------------------------------------------------------------------
 
 _SNAP_NAME = "ctrlx-datalayer-reader"
 
 _HTML = f"""\
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <base href="/{_SNAP_NAME}/">
-  <title>Michaels ctrlX Data Layer Dashboard</title>
+  <title>ctrlX Data Layer Dashboard</title>
   <style>
     *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
+
     body {{
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      background: #0f1117; color: #e0e0e0;
-      min-height: 100vh; padding: 32px 24px;
+      font-family: 'Bosch-Sans', system-ui, -apple-system, sans-serif;
+      background: #fafafa;
+      color: rgba(0,0,0,.87);
+      min-height: 100vh;
     }}
-    header {{ margin-bottom: 28px; }}
-    h1 {{ color: #00a8e0; font-size: 1.6rem; margin-bottom: 4px; }}
-    .subtitle {{ color: #777; font-size: 0.85rem; }}
-    .status-bar {{
-      display: flex; align-items: center; gap: 8px;
-      margin-bottom: 28px; font-size: 0.85rem;
+
+    /* Bosch supergraphic — decorative gradient band */
+    .supergraphic {{
+      height: 6px;
+      background: linear-gradient(90deg, #005587 0%, #007bc0 55%, #7ebdff 100%);
+    }}
+
+    /* Toolbar */
+    .toolbar {{
+      background: #005587;
+      color: #fff;
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 2px 4px -1px rgba(0,0,0,.2), 0 4px 5px 0 rgba(0,0,0,.14), 0 1px 10px 0 rgba(0,0,0,.12);
+    }}
+    .toolbar h1 {{
+      font-size: 1.05rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      flex: 1;
+    }}
+    .toolbar .status-bar {{
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      opacity: .9;
     }}
     .dot {{
-      width: 10px; height: 10px; border-radius: 50%;
-      background: #555; flex-shrink: 0;
+      width: 9px; height: 9px; border-radius: 50%;
+      background: rgba(255,255,255,.4);
+      flex-shrink: 0;
       transition: background 0.4s;
     }}
-    .dot.ok   {{ background: #00c070; box-shadow: 0 0 6px #00c070; }}
-    .dot.err  {{ background: #e04040; box-shadow: 0 0 6px #e04040; }}
+    .dot.ok  {{ background: #66bb6a; box-shadow: 0 0 5px #66bb6a; }}
+    .dot.err {{ background: #ed0007; box-shadow: 0 0 5px #ed0007; }}
+
+    /* Page content */
+    .content {{
+      padding: 24px;
+      max-width: 960px;
+    }}
+
+    /* Card grid */
     .grid {{
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 16px;
     }}
+
+    /* Material card */
     .card {{
-      background: #1c1f2b; border: 1px solid #2a2d3e;
-      border-radius: 10px; padding: 20px;
+      background: #fff;
+      border-radius: 4px;
+      padding: 20px 20px 16px;
+      box-shadow: 0 2px 1px -1px rgba(0,0,0,.2), 0 1px 1px 0 rgba(0,0,0,.14), 0 1px 3px 0 rgba(0,0,0,.12);
     }}
-    .label {{
-      font-size: 0.75rem; text-transform: uppercase;
-      letter-spacing: 0.06em; color: #777; margin-bottom: 6px;
+    .card-label {{
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(0,0,0,.54);
+      margin-bottom: 8px;
     }}
-    .value {{
-      font-size: 2.2rem; font-weight: 700; color: #fff;
-      margin-bottom: 12px; line-height: 1;
+    .card-value {{
+      font-size: 2rem;
+      font-weight: 700;
+      color: #005587;
+      line-height: 1;
+      margin-bottom: 12px;
     }}
-    .unit {{ font-size: 1rem; color: #888; font-weight: 400; }}
-    .bar-bg {{
-      height: 6px; background: #2a2d3e;
-      border-radius: 3px; overflow: hidden;
+    .card-unit {{
+      font-size: 1rem;
+      color: rgba(0,0,0,.45);
+      font-weight: 400;
     }}
-    .bar {{
-      height: 100%; border-radius: 3px;
-      background: linear-gradient(90deg, #00a8e0, #0070c0);
+
+    /* Progress track (Material style) */
+    .progress-track {{
+      height: 4px;
+      background: #e0e0e0;
+      border-radius: 2px;
+      overflow: hidden;
+    }}
+    .progress-bar {{
+      height: 100%;
+      border-radius: 2px;
+      background: #007bc0;
       transition: width 0.6s ease, background 0.4s;
       width: 0%;
     }}
-    .bar.warn   {{ background: linear-gradient(90deg, #f0a500, #e06000); }}
-    .bar.danger {{ background: linear-gradient(90deg, #e04040, #a00000); }}
-    .updated {{
-      margin-top: 20px; font-size: 0.75rem; color: #444;
+    .progress-bar.warn   {{ background: #ffcf00; }}
+    .progress-bar.danger {{ background: #ed0007; }}
+
+    /* Footer timestamp */
+    .footer {{
+      margin-top: 20px;
+      font-size: 0.72rem;
+      color: rgba(0,0,0,.38);
       text-align: right;
     }}
   </style>
 </head>
 <body>
-  <header>
-    <h1>Michaels ctrlX Data Layer Dashboard</h1>
-    <p class="subtitle">Echtzeit-Systemmetriken</p>
-  </header>
+  <div class="supergraphic"></div>
 
-  <div class="status-bar">
-    <span class="dot" id="dot"></span>
-    <span id="status">Verbinde&hellip;</span>
-  </div>
-
-  <div class="grid">
-    <div class="card">
-      <div class="label">CPU-Auslastung</div>
-      <div class="value"><span id="cpu">--</span><span class="unit"> %</span></div>
-      <div class="bar-bg"><div class="bar" id="cpu-bar"></div></div>
-    </div>
-    <div class="card">
-      <div class="label">Arbeitsspeicher genutzt</div>
-      <div class="value"><span id="mem-used">--</span><span class="unit"> %</span></div>
-      <div class="bar-bg"><div class="bar" id="mem-bar"></div></div>
-    </div>
-    <div class="card">
-      <div class="label">Arbeitsspeicher frei</div>
-      <div class="value"><span id="mem-free">--</span><span class="unit"> MB</span></div>
-    </div>
-    <div class="card">
-      <div class="label">PLC Zähler (GVL.gCounter)</div>
-      <div class="value"><span id="plc-counter">--</span></div>
+  <div class="toolbar">
+    <h1>ctrlX Data Layer Dashboard</h1>
+    <div class="status-bar">
+      <span class="dot" id="dot"></span>
+      <span id="status">Connecting&hellip;</span>
     </div>
   </div>
 
-  <p class="updated" id="updated"></p>
+  <div class="content">
+    <div class="grid">
+      <div class="card">
+        <div class="card-label">CPU Usage</div>
+        <div class="card-value"><span id="cpu">--</span><span class="card-unit"> %</span></div>
+        <div class="progress-track"><div class="progress-bar" id="cpu-bar"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-label">Memory Used</div>
+        <div class="card-value"><span id="mem-used">--</span><span class="card-unit"> %</span></div>
+        <div class="progress-track"><div class="progress-bar" id="mem-bar"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-label">Memory Available</div>
+        <div class="card-value"><span id="mem-free">--</span><span class="card-unit"> MB</span></div>
+      </div>
+      <div class="card">
+        <div class="card-label">PLC Counter (GVL.gCounter)</div>
+        <div class="card-value"><span id="plc-counter">--</span></div>
+      </div>
+    </div>
+    <p class="footer" id="updated"></p>
+  </div>
 
   <script>
-    function setBar(barEl, pct) {{
-      barEl.style.width = Math.min(pct, 100) + '%';
-      barEl.className = 'bar' +
+    function setBar(el, pct) {{
+      el.style.width = Math.min(pct, 100) + '%';
+      el.className = 'progress-bar' +
         (pct > 90 ? ' danger' : pct > 70 ? ' warn' : '');
     }}
 
@@ -221,7 +284,7 @@ _HTML = f"""\
         const dot = document.getElementById('dot');
         dot.className = 'dot ' + (d.connected ? 'ok' : 'err');
         document.getElementById('status').textContent =
-          d.connected ? 'Verbunden' : 'Nicht verbunden';
+          d.connected ? 'Connected' : 'Not connected';
 
         document.getElementById('cpu').textContent =
           d.cpu_percent !== null ? d.cpu_percent.toFixed(1) : '--';
@@ -242,11 +305,11 @@ _HTML = f"""\
         if (d.last_updated) {{
           const t = new Date(d.last_updated);
           document.getElementById('updated').textContent =
-            'Zuletzt: ' + t.toLocaleTimeString('de-DE', {{hour12: false}}) +
+            'Last updated: ' + t.toLocaleTimeString('en', {{hour12: false}}) +
             '.' + String(t.getMilliseconds()).padStart(3, '0');
         }}
       }} catch (e) {{
-        document.getElementById('status').textContent = 'Fehler: ' + e.message;
+        document.getElementById('status').textContent = 'Error: ' + e.message;
         document.getElementById('dot').className = 'dot err';
       }}
     }}
@@ -259,16 +322,16 @@ _HTML = f"""\
 """
 
 # ---------------------------------------------------------------------------
-# HTTP-Server auf Unix-Socket
+# HTTP server on Unix socket
 # ---------------------------------------------------------------------------
 
 class _Handler(http.server.BaseHTTPRequestHandler):
     def log_message(self, fmt, *args):
-        pass  # Kein Request-Log in der Konsole
+        pass  # suppress per-request console output
 
     def do_GET(self):
         path = self.path.split("?")[0]
-        # Präfix entfernen (ctrlX Reverse Proxy leitet mit Pfad weiter)
+        # Strip snap prefix forwarded by the ctrlX reverse proxy
         if path.startswith(f"/{_SNAP_NAME}"):
             path = path[len(f"/{_SNAP_NAME}"):]
         path = path.rstrip("/") or "/"
@@ -304,9 +367,9 @@ class _UnixSocketHTTPServer(http.server.HTTPServer):
 def _run_http_server(socket_path: str):
     os.makedirs(os.path.dirname(socket_path), exist_ok=True)
     srv = _UnixSocketHTTPServer(socket_path, _Handler)
-    srv.timeout = 1.0  # handle_request blockiert max. 1 s → Stop-Check möglich
+    srv.timeout = 1.0  # handle_request blocks at most 1 s so stop signal is checked
     os.chmod(socket_path, 0o666)
-    print(f"Web-Server lauscht auf {socket_path}", flush=True)
+    print(f"Web server listening on {socket_path}", flush=True)
     while not _stop_event.is_set():
         srv.handle_request()
     srv.server_close()
@@ -319,14 +382,14 @@ def main():
     snap_data   = os.environ.get("SNAP_DATA", "/tmp")
     socket_path = os.path.join(snap_data, "package-run", _SNAP_NAME, "web.sock")
 
-    # Data Layer Reader als Daemon-Thread starten
+    # Start Data Layer reader as daemon thread
     dl_thread = threading.Thread(target=_datalayer_reader, daemon=True, name="datalayer")
     dl_thread.start()
 
-    # HTTP-Server im Haupt-Thread (blockt bis Stop-Signal)
+    # Run HTTP server on main thread (blocks until stop signal)
     _run_http_server(socket_path)
 
-    print("Beendet.", flush=True)
+    print("Stopped.", flush=True)
 
 
 if __name__ == "__main__":
