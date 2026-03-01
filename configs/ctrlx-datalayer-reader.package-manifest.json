@@ -7,8 +7,7 @@
       {
         "name": "ctrlx-datalayer-reader.web",
         "url": "/ctrlx-datalayer-reader",
-        "binding": "unix://{$SNAP_DATA}/package-run/ctrlx-datalayer-reader/web.sock",
-        "restricted": ["/ctrlx-datalayer-reader/api"]
+        "binding": "unix://{$SNAP_DATA}/package-run/ctrlx-datalayer-reader/web.sock"
       }
     ]
   },
