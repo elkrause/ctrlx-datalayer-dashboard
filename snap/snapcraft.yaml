@@ -13,7 +13,7 @@ description: |
     - framework/metrics/system/memused-percent
 
 base: core22        # Ubuntu 22.04 LTS
-confinement: devmode # TODO: switch to strict for Store publication
+confinement: strict # Required for ctrlX Store publication
 grade: devel        # Change to 'stable' for production release
 
 contact: your-email@example.com
@@ -76,7 +76,7 @@ apps:
       - package-run
     environment:
       PYTHONUNBUFFERED: "1"
-      LD_LIBRARY_PATH: $SNAP/lib/python3.10/site-packages/ctrlxdatalayer
+      LD_LIBRARY_PATH: $SNAP/lib/python3.10/site-packages/ctrlxdatalayer:$SNAP/usr/lib/x86_64-linux-gnu:$SNAP/usr/lib/aarch64-linux-gnu:$SNAP/usr/lib
 
 # -----------------------------------------------------------------------
 # Parts: how to build the snap
@@ -87,6 +87,8 @@ parts:
     source: .
     python-requirements:
       - requirements.txt
+    stage-packages:
+      - libcomm-datalayer
 
   app:
     plugin: dump
