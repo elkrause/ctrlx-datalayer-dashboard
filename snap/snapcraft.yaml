@@ -84,6 +84,8 @@ parts:
   ctrlx-datalayer-reader:
     plugin: python
     source: .
+    python-requirements:
+      - requirements.txt
 
   app:
     plugin: dump
