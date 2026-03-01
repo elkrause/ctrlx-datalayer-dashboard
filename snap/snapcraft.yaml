@@ -1,5 +1,5 @@
 name: ctrlx-datalayer-reader
-title: ctrlX Data Layer Reader
+title: Michaels ctrlX Data Layer Dashboard
 version: "1.0.0"
 summary: Reads and displays ctrlX Data Layer nodes periodically
 description: |
@@ -84,6 +84,12 @@ parts:
   ctrlx-datalayer-reader:
     plugin: python
     source: .
+
+  app:
+    plugin: dump
+    source: app/
+    organize:
+      "*": app/
 
   # Package manifest and assets for ctrlX Store integration
   configs:

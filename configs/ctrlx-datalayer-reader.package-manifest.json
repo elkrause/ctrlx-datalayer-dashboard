@@ -7,7 +7,7 @@
     "sidebar": [
       {
         "id": "ctrlx-datalayer-reader",
-        "title": "Data Layer Reader",
+        "title": "Michaels ctrlX Data Layer Dashboard",
         "icon": "bosch-ic-monitoring",
         "permissions": [],
         "items": [

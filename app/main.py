@@ -115,7 +115,7 @@ _HTML = f"""\
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <base href="/{_SNAP_NAME}/">
-  <title>ctrlX Data Layer Reader</title>
+  <title>Michaels ctrlX Data Layer Dashboard</title>
   <style>
     *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
     body {{
@@ -175,7 +175,7 @@ _HTML = f"""\
 </head>
 <body>
   <header>
-    <h1>ctrlX Data Layer Reader</h1>
+    <h1>Michaels ctrlX Data Layer Dashboard</h1>
     <p class="subtitle">Echtzeit-Systemmetriken</p>
   </header>
 
