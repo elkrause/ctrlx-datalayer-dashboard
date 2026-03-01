@@ -1,6 +1,6 @@
 name: ctrlx-datalayer-reader
 title: Michaels ctrlX Data Layer Dashboard
-version: "1.0.1"
+version: "1.0.2"
 summary: Reads and displays ctrlX Data Layer nodes periodically
 description: |
   A ctrlX OS app that connects to the ctrlX Data Layer via IPC and
