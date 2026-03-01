@@ -84,9 +84,6 @@ parts:
   ctrlx-datalayer-reader:
     plugin: python
     source: .
-    stage-packages:
-      # Bundles libcomm_datalayer.so into the snap (required for IPC)
-      - ctrlx-datalayer
 
   # Package manifest and assets for ctrlX Store integration
   configs:
@@ -94,10 +91,3 @@ parts:
     source: configs/
     organize:
       "*": package-assets/${SNAPCRAFT_PROJECT_NAME}/
-
-# Suppress false-positive lint warnings for the bundled C shared library
-lint:
-  ignore:
-    - library:
-      - usr/lib/aarch64-linux-gnu/libcomm_datalayer.so.*
-      - usr/lib/x86_64-linux-gnu/libcomm_datalayer.so.*
