@@ -194,3 +194,39 @@ Hope this saves someone a few hours. Happy to answer questions in the comments.
 
 *Built with: ctrlX OS · Python 3.10 · ctrlX Automation SDK · Snapcraft*
 *Tested on: ctrlX CORE XM22 · ctrlX Works (simulation)*
+
+---
+
+## LinkedIn Post
+
+---
+
+I just shipped my first custom app for **Bosch Rexroth ctrlX OS** — and it was a great learning experience.
+
+The app is a small Python snap that reads live system metrics and a PLC variable from the **ctrlX Data Layer** and displays them in a web dashboard, embedded directly in the Device Admin interface.
+
+No third-party frameworks — just Python's built-in `http.server`, a Unix socket, and the ctrlX Automation SDK.
+
+**What I learned the hard way:**
+
+🔴 `proxyMapping` in the package manifest must be nested inside `services` — not at root level. The v1.3 schema shows it at root, but Device Admin silently ignores it there. This caused a 404 that took a while to track down.
+
+🔴 There is no `menus.sidebar` in ctrlX OS. The correct key for an app tile on the overview page is `menus.overview`.
+
+🔴 The `restricted` field in the manifest blocks everything under that path — including the HTML page itself. When an unauthenticated request hits the proxy, it returns an HTML error page, not JSON. If your frontend calls `fetch().json()`, you get `Unexpected end of JSON input`. Took me a moment to connect those dots.
+
+🔴 After a sideload install (`--dangerous`), snap content interfaces are not connected automatically. Three manual `snap connect` commands are needed. When using Device Admin for upload, this happens automatically.
+
+🔴 After updating the package manifest, Device Admin must be restarted (`sudo snap restart rexroth-deviceadmin`) — otherwise the old routing and menu config stay active.
+
+🟢 No `curl` on ctrlX OS? No problem — a Python one-liner can test a Unix socket directly.
+
+---
+
+The full source, manifest, and snapcraft config are on GitHub if anyone wants a working reference for their own ctrlX OS Python app.
+
+👉 https://github.com/elkrause/ctrlx-datalayer-dashboard
+
+Happy to answer questions or compare notes with anyone else building on ctrlX OS.
+
+#ctrlX #BoshRexroth #ctrlXOS #Python #IIoT #IndustrialAutomation #Snapcraft #DataLayer #EdgeComputing #OpenSource
