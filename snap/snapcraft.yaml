@@ -37,9 +37,6 @@ plugs:
     content: datalayer
     target: $SNAP_DATA/.datalayer
 
-  network:
-  network-bind:
-
 # -----------------------------------------------------------------------
 # Slots: data the snap exposes to ctrlX OS
 # -----------------------------------------------------------------------
