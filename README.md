@@ -1,7 +1,7 @@
 # ctrlX Data Layer Dashboard
 
 A **ctrlX OS snap app** written in Python that reads system metrics and PLC variables
-from the [ctrlX Data Layer](https://developer.community.boschrexroth.com/t5/Store-and-How-to/bg-p/how-to)
+from the [ctrlX Data Layer](https://community.boschrexroth.com/ctrlx-automation-how-tos-qmglrz33/post/faq-for-ctrlx-data-layer-6eqz3hmeXbBo5Gv)
 and displays them in a live web dashboard embedded in the ctrlX OS interface.
 
 ## Dashboard
@@ -52,7 +52,7 @@ ctrlx-datalayer-dashboard/
 
 - Python 3.10+
 - [ctrlX Automation SDK](https://github.com/boschrexroth/ctrlx-automation-sdk)
-- A ctrlX device or [ctrlX Works](https://www.boschrexroth.com/ctrlx-automation) simulation
+- A ctrlX OS device or [ctrlX WORKS](https://www.ctrlx-os.com/en/download/) Engineering and App Building Environment
 
 ### Install dependencies
 
@@ -149,6 +149,6 @@ NODES_INT = {
 ## Resources
 
 - [ctrlX Automation SDK on GitHub](https://github.com/boschrexroth/ctrlx-automation-sdk)
-- [ctrlX Developer Community](https://developer.community.boschrexroth.com/)
-- [ctrlX Store](https://apps.boschrexroth.com/)
+- [ctrlX OS Community](https://community.boschrexroth.com/ctrlx-automation-fievtt9z)
+- [ctrlX OS Store](https://www.ctrlx-os.com/en/ctrlx-os-store/)
 - [Snapcraft documentation](https://snapcraft.io/docs)
