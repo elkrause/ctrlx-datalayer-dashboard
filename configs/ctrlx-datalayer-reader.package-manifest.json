@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json-schema.boschrexroth.com/ctrlx-automation/ctrlx-core/apps/package-manifest/package-manifest.v1.6.schema.json",
   "version": "1.0.0",
   "id": "ctrlx-datalayer-reader",
 
@@ -13,22 +14,21 @@
   },
 
   "menus": {
-    "overview": [
-      {
-        "id": "ctrlx-datalayer-reader",
-        "title": "Michaels ctrlX Data Layer Dashboard",
-        "icon": "bosch-ic-monitoring",
-        "link": "/ctrlx-datalayer-reader",
-        "permissions": []
-      }
-    ],
-    "settings": [
+    "sidebar": [
       {
         "id": "ctrlx-datalayer-reader-sidebar",
         "title": "Data Layer Dashboard",
         "icon": "bosch-ic-monitoring",
         "link": "/ctrlx-datalayer-reader",
-        "permissions": []
+        "target": "_blank"
+      }
+    ],
+    "overview": [
+      {
+        "id": "ctrlx-datalayer-reader",
+        "title": "Michaels ctrlX Data Layer Dashboard",
+        "icon": "bosch-ic-monitoring",
+        "link": "/ctrlx-datalayer-reader"
       }
     ]
   }

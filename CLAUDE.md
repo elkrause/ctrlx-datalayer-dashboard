@@ -67,18 +67,34 @@ requests, not JSON. `fetch().json()` then fails to parse it.
 **Fix:** Remove `restricted` entirely for a public local dashboard.
 Only restrict API paths if needed: `"restricted": ["/app/api"]`.
 
-### 4. `menus.sidebar` does not exist
+### 4. Sidebar entry: use `menus.sidebar`, schema v1.6
 
-**Problem:** `menus.sidebar` is not recognized by ctrlX OS → no menu entry appears.
-
-**Valid menu types:**
+**Valid menu types (schema v1.6):**
 | Type       | Usage                                        |
 |------------|----------------------------------------------|
+| `sidebar`  | Entry in the left-hand Device Admin sidebar  |
 | `overview` | Tile on the ctrlX OS home/overview page      |
 | `settings` | Entry in the device settings section         |
-| `system`   | Entry in the system configuration section    |
 
-**Fix:** Use `menus.overview` for app dashboards.
+**Working sidebar entry (from SDK `samples-python/webserver`):**
+```json
+"menus": {
+  "sidebar": [
+    {
+      "id": "my-app-sidebar",
+      "title": "My App",
+      "icon": "bosch-ic-worldwideweb",
+      "link": "/my-app",
+      "target": "_blank"
+    }
+  ]
+}
+```
+
+**Note:** Schema must be v1.6 for `sidebar` to work:
+```json
+"$schema": "https://json-schema.boschrexroth.com/ctrlx-automation/ctrlx-core/apps/package-manifest/package-manifest.v1.6.schema.json"
+```
 
 ### 5. Snap slots must be connected manually after sideload
 
