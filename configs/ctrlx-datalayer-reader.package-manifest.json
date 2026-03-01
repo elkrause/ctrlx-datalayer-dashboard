@@ -21,6 +21,15 @@
         "link": "/ctrlx-datalayer-reader",
         "permissions": []
       }
+    ],
+    "settings": [
+      {
+        "id": "ctrlx-datalayer-reader-sidebar",
+        "title": "Data Layer Dashboard",
+        "icon": "bosch-ic-monitoring",
+        "link": "/ctrlx-datalayer-reader",
+        "permissions": []
+      }
     ]
   }
 }
