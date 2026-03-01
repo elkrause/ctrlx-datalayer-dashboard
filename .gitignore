@@ -16,6 +16,7 @@ stage/
 
 # Debian packages (not for version control)
 *.deb
+*.deb.*
 
 # IDE
 .vscode/
