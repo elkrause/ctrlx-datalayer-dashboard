@@ -1,0 +1,106 @@
+name: ctrlx-datalayer-reader
+title: ctrlX Data Layer Reader
+version: "1.0.0"
+summary: Reads and displays ctrlX Data Layer nodes periodically
+description: |
+  A ctrlX OS app that connects to the ctrlX Data Layer via IPC and
+  periodically reads system metrics (CPU, memory). A web dashboard
+  is available under /ctrlx-datalayer-reader in the ctrlX OS interface.
+
+  Nodes read:
+    - framework/metrics/system/cpu-utilisation-percent
+    - framework/metrics/system/memavailable-mb
+    - framework/metrics/system/memused-percent
+
+base: core24        # Ubuntu 24.04 LTS
+confinement: strict # Required for ctrlX Store publication
+grade: devel        # Change to 'stable' for production release
+
+contact: your-email@example.com
+issues: https://github.com/your-org/ctrlx-datalayer-reader/issues
+website: https://github.com/your-org/ctrlx-datalayer-reader
+
+# Multi-architecture: amd64 = ctrlX virtual, arm64 = physical ctrlX CORE
+platforms:
+  amd64:
+  arm64:
+    build-on: [amd64, arm64]
+    build-for: [arm64]
+
+# -----------------------------------------------------------------------
+# Plugs: permissions the snap needs from ctrlX OS
+# -----------------------------------------------------------------------
+plugs:
+  # IPC socket access to the ctrlX Data Layer daemon (required for ipc://)
+  datalayer:
+    interface: content
+    content: datalayer
+    target: $SNAP_DATA/.datalayer
+
+  network:
+  network-bind:
+
+# -----------------------------------------------------------------------
+# Slots: data the snap exposes to ctrlX OS
+# -----------------------------------------------------------------------
+slots:
+  # Exposes package-manifest.json to ctrlX Device Admin (Store integration)
+  package-assets:
+    interface: content
+    content: package-assets
+    source:
+      read:
+        - $SNAP/package-assets/${SNAPCRAFT_PROJECT_NAME}
+
+  # Exposes runtime socket/PID to ctrlX OS process manager
+  package-run:
+    interface: content
+    content: package-run
+    source:
+      write:
+        - $SNAP_DATA/package-run/${SNAPCRAFT_PROJECT_NAME}
+
+# -----------------------------------------------------------------------
+# Apps: the executables exposed by the snap
+# -----------------------------------------------------------------------
+apps:
+  ctrlx-datalayer-reader:
+    command: bin/python3 $SNAP/app/main.py
+    daemon: simple
+    restart-condition: always
+    passthrough:
+      restart-delay: 30s
+    plugs:
+      - datalayer
+      - network
+      - network-bind
+    slots:
+      - package-assets
+      - package-run
+    environment:
+      PYTHONUNBUFFERED: "1"
+
+# -----------------------------------------------------------------------
+# Parts: how to build the snap
+# -----------------------------------------------------------------------
+parts:
+  ctrlx-datalayer-reader:
+    plugin: python
+    source: .
+    stage-packages:
+      # Bundles libcomm_datalayer.so into the snap (required for IPC)
+      - ctrlx-datalayer
+
+  # Package manifest and assets for ctrlX Store integration
+  configs:
+    plugin: dump
+    source: configs/
+    organize:
+      "*": package-assets/${SNAPCRAFT_PROJECT_NAME}/
+
+# Suppress false-positive lint warnings for the bundled C shared library
+lint:
+  ignore:
+    - library:
+      - usr/lib/aarch64-linux-gnu/libcomm_datalayer.so.*
+      - usr/lib/x86_64-linux-gnu/libcomm_datalayer.so.*
