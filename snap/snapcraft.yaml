@@ -76,6 +76,7 @@ apps:
       - package-run
     environment:
       PYTHONUNBUFFERED: "1"
+      LD_LIBRARY_PATH: $SNAP/lib/python3.10/site-packages/ctrlxdatalayer
 
 # -----------------------------------------------------------------------
 # Parts: how to build the snap
