@@ -13,7 +13,7 @@ description: |
     - framework/metrics/system/memused-percent
 
 base: core22        # Ubuntu 22.04 LTS
-confinement: strict # Required for ctrlX Store publication
+confinement: devmode # TODO: switch to strict for Store publication
 grade: devel        # Change to 'stable' for production release
 
 contact: your-email@example.com
