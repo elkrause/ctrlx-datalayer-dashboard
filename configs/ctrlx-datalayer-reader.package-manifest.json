@@ -13,20 +13,13 @@
   },
 
   "menus": {
-    "sidebar": [
+    "overview": [
       {
         "id": "ctrlx-datalayer-reader",
         "title": "Michaels ctrlX Data Layer Dashboard",
         "icon": "bosch-ic-monitoring",
-        "permissions": [],
-        "items": [
-          {
-            "id": "ctrlx-datalayer-reader-dashboard",
-            "title": "Dashboard",
-            "link": "/ctrlx-datalayer-reader",
-            "permissions": []
-          }
-        ]
+        "link": "/ctrlx-datalayer-reader",
+        "permissions": []
       }
     ]
   }
