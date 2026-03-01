@@ -12,7 +12,7 @@ description: |
     - framework/metrics/system/memavailable-mb
     - framework/metrics/system/memused-percent
 
-base: core24        # Ubuntu 24.04 LTS
+base: core22        # Ubuntu 22.04 LTS
 confinement: strict # Required for ctrlX Store publication
 grade: devel        # Change to 'stable' for production release
 
