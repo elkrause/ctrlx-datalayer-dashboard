@@ -1,7 +1,17 @@
 {
-  "$schema": "https://json-schema.boschrexroth.com/ctrlx-automation/ctrlx-core/apps/package-manifest/package-manifest.v1.3.schema.json",
   "version": "1.0.0",
   "id": "ctrlx-datalayer-reader",
+
+  "services": {
+    "proxyMapping": [
+      {
+        "name": "ctrlx-datalayer-reader.web",
+        "url": "/ctrlx-datalayer-reader",
+        "binding": "unix://{$SNAP_DATA}/package-run/ctrlx-datalayer-reader/web.sock",
+        "restricted": ["/ctrlx-datalayer-reader"]
+      }
+    ]
+  },
 
   "menus": {
     "sidebar": [
@@ -20,14 +30,5 @@
         ]
       }
     ]
-  },
-
-  "proxyMapping": [
-    {
-      "name": "ctrlx-datalayer-reader.web",
-      "url": "/ctrlx-datalayer-reader",
-      "binding": "unix://{$SNAP_DATA}/package-run/ctrlx-datalayer-reader/web.sock",
-      "restricted": ["/ctrlx-datalayer-reader"]
-    }
-  ]
+  }
 }
