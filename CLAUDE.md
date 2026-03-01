@@ -1,10 +1,10 @@
 # ctrlX Data Layer Dashboard
 
-GitHub-Repo: https://github.com/elkrause/ctrlx-datalayer-dashboard
+GitHub repo: https://github.com/elkrause/ctrlx-datalayer-dashboard
 
-## Entwicklung
+## Development
 
-Änderungen immer in diesem Verzeichnis committen und zu GitHub pushen:
+Always commit and push changes from this directory:
 
 ```bash
 git add .
@@ -12,19 +12,19 @@ git commit -m "..."
 git push origin main
 ```
 
-## Projekt-Übersicht
+## Project Overview
 
-Python-App für ctrlX OS, die Systemmetriken und PLC-Variablen
-aus dem ctrlX Data Layer liest und in einem Web-Dashboard anzeigt.
+Python app for ctrlX OS that reads system metrics and PLC variables
+from the ctrlX Data Layer and displays them in a web dashboard.
 
-- `app/main.py` — HTTP-Server, Data-Layer-Reader, HTML-Dashboard
-- `snap/snapcraft.yaml` — ctrlX-Snap-Build-Konfiguration
-- `configs/` — Package Manifest
-- `requirements.txt` — Python-Abhängigkeiten
+- `app/main.py` — HTTP server, Data Layer reader, HTML dashboard
+- `snap/snapcraft.yaml` — ctrlX snap build configuration
+- `configs/` — Package manifest
+- `requirements.txt` — Python dependencies
 
-## Data-Layer-Nodes
+## Data Layer Nodes
 
-| Key              | Node                                              | Typ     |
+| Key              | Node                                              | Type    |
 |------------------|---------------------------------------------------|---------|
 | cpu_percent      | framework/metrics/system/cpu-utilisation-percent  | float64 |
 | mem_used_percent | framework/metrics/system/memused-percent          | float64 |
@@ -33,14 +33,14 @@ aus dem ctrlX Data Layer liest und in einem Web-Dashboard anzeigt.
 
 ---
 
-## Learnings aus der Inbetriebnahme (März 2026)
+## Key Learnings from Commissioning (March 2026)
 
-### 1. Package Manifest: `proxyMapping` muss in `services` liegen
+### 1. `proxyMapping` must be nested inside `services`
 
-**Problem:** `proxyMapping` auf Root-Ebene (v1.3 Schema) → Reverse Proxy liefert 404.
+**Problem:** `proxyMapping` at root level (v1.3 schema) → reverse proxy returns 404.
 
-**Ursache:** Device Admin auf ctrlX OS unterstützt nur das ältere Format mit
-`services.proxyMapping`. Das v1.3 Schema mit Root-Level `proxyMapping` wird ignoriert.
+**Root cause:** Device Admin on ctrlX OS only supports the older format with
+`services.proxyMapping`. Root-level `proxyMapping` from the v1.3 schema is silently ignored.
 
 **Fix:**
 ```json
@@ -51,39 +51,39 @@ aus dem ctrlX Data Layer liest und in einem Web-Dashboard anzeigt.
 }
 ```
 
-### 2. `$schema`-Feld weglassen
+### 2. Omit the `$schema` field
 
-Das `$schema`-Feld im Package Manifest führt zu keinem Fehler, aber alle
-funktionierenden System-Apps haben es nicht. Zur Sicherheit weglassen.
+The `$schema` field in the package manifest does not cause an error, but none of
+the working system apps include it. Leave it out to be safe.
 
-### 3. `restricted`-Feld blockiert die gesamte App
+### 3. The `restricted` field blocks the entire app
 
-**Problem:** `"restricted": ["/ctrlx-datalayer-reader"]` blockiert auch die
-HTML-Seite → HTTP 401, JavaScript-Fehler `Unexpected end of JSON input`.
+**Problem:** `"restricted": ["/ctrlx-datalayer-reader"]` blocks the HTML page too
+→ HTTP 401, JavaScript error `Unexpected end of JSON input`.
 
-**Ursache:** Der Reverse Proxy gibt bei nicht-authentifizierten Requests eine
-HTML-Fehlerseite zurück, kein JSON. `fetch().json()` schlägt dann fehl.
+**Root cause:** The reverse proxy returns an HTML error page for unauthenticated
+requests, not JSON. `fetch().json()` then fails to parse it.
 
-**Fix:** `restricted` komplett entfernen für ein öffentliches lokales Dashboard.
-Nur API-Pfade einschränken wenn nötig: `"restricted": ["/app/api"]`.
+**Fix:** Remove `restricted` entirely for a public local dashboard.
+Only restrict API paths if needed: `"restricted": ["/app/api"]`.
 
-### 4. `menus.sidebar` existiert nicht
+### 4. `menus.sidebar` does not exist
 
-**Problem:** `menus.sidebar` wird von ctrlX OS nicht erkannt → kein Menüeintrag.
+**Problem:** `menus.sidebar` is not recognized by ctrlX OS → no menu entry appears.
 
-**Gültige Menü-Typen:**
-| Typ        | Verwendung                              |
-|------------|-----------------------------------------|
-| `overview` | Kachel auf der ctrlX OS Startseite      |
-| `settings` | Eintrag im Einstellungsbereich          |
-| `system`   | Eintrag im Systemkonfigurationsbereich  |
+**Valid menu types:**
+| Type       | Usage                                        |
+|------------|----------------------------------------------|
+| `overview` | Tile on the ctrlX OS home/overview page      |
+| `settings` | Entry in the device settings section         |
+| `system`   | Entry in the system configuration section    |
 
-**Fix:** `menus.overview` verwenden für App-Dashboards.
+**Fix:** Use `menus.overview` for app dashboards.
 
-### 5. Snap-Slots müssen manuell verbunden werden
+### 5. Snap slots must be connected manually after sideload
 
-Nach Installation mit `--dangerous` (sideload) müssen die Content-Interface-Slots
-manuell verbunden werden:
+After installing with `--dangerous` (sideload), content interface slots
+must be connected manually:
 
 ```bash
 snap connect ctrlx-datalayer-reader:datalayer rexroth-automationcore:datalayer
@@ -91,28 +91,28 @@ snap connect rexroth-deviceadmin:package-assets ctrlx-datalayer-reader:package-a
 snap connect rexroth-deviceadmin:package-run ctrlx-datalayer-reader:package-run
 ```
 
-### 6. Device Admin nach Manifest-Änderung neu starten
+### 6. Restart Device Admin after manifest changes
 
-Wenn das Package Manifest aktualisiert wurde (neuer Snap installiert), muss
-Device Admin neu gestartet werden damit Proxy-Routing und Menüeinträge aktiv werden:
+When the package manifest is updated (new snap installed), Device Admin must be
+restarted for proxy routing and menu entries to take effect:
 
 ```bash
 sudo snap restart rexroth-deviceadmin
 ```
 
-### 7. `.deb`-Dateien nicht ins Git-Repo
+### 7. Do not commit `.deb` files
 
-Debian-Pakete (z.B. `ctrlx-datalayer-3.4.1.deb`) sind Build-Artefakte und
-gehören nicht ins Repository. In `.gitignore` aufnehmen:
+Debian packages (e.g. `ctrlx-datalayer-3.4.1.deb`) are build artifacts and do
+not belong in the repository. Add to `.gitignore`:
 
 ```
 *.deb
 *.deb.*
 ```
 
-### 8. Debugging-Werkzeuge ohne `curl`
+### 8. Debugging the socket without `curl`
 
-Da `curl` auf ctrlX OS nicht verfügbar ist, Unix-Socket direkt mit Python testen:
+Since `curl` is not available on ctrlX OS, test the Unix socket directly with Python:
 
 ```bash
 python3 -c "

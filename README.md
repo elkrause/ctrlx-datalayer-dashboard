@@ -1,43 +1,58 @@
-# ctrlX OS Data Layer Reader
+# ctrlX Data Layer Dashboard
 
-A minimal **ctrlX OS Snap-Package App** in Python that reads system metrics from the
-[ctrlX Data Layer](https://developer.community.boschrexroth.com/t5/Store-and-How-to/bg-p/how-to) and logs them periodically.
+A **ctrlX OS snap app** written in Python that reads system metrics and PLC variables
+from the [ctrlX Data Layer](https://developer.community.boschrexroth.com/t5/Store-and-How-to/bg-p/how-to)
+and displays them in a live web dashboard embedded in the ctrlX OS interface.
 
-## What it reads
+## Dashboard
 
-| Node | Description |
-|------|-------------|
-| `framework/metrics/system/cpu-utilisation-percent` | CPU utilization in % |
-| `framework/metrics/system/memavailable-mb` | Available memory in MB |
-| `framework/metrics/system/memused-percent` | Memory utilization in % |
+Once installed, the dashboard is accessible at:
 
-Output appears every 2 seconds in the snap journal.
+```
+https://<device-ip>/ctrlx-datalayer-reader
+```
+
+It is also registered on the ctrlX OS overview page via the package manifest.
+
+## Data Layer Nodes
+
+| Key              | Node                                              | Type    |
+|------------------|---------------------------------------------------|---------|
+| cpu_percent      | framework/metrics/system/cpu-utilisation-percent  | float64 |
+| mem_used_percent | framework/metrics/system/memused-percent          | float64 |
+| mem_available_mb | framework/metrics/system/memavailable-mb          | float64 |
+| plc_counter      | plc/app/Application/sym/GVL/gCounter              | int32   |
+
+Data is refreshed every 2 seconds via a JSON API endpoint.
 
 ---
 
-## Project structure
+## Project Structure
 
 ```
-ctrlx-os-app/
+ctrlx-datalayer-dashboard/
 ├── app/
-│   └── main.py                  # Main Python application
+│   └── main.py                  # HTTP server, Data Layer reader, HTML dashboard
+├── configs/
+│   └── ctrlx-datalayer-reader.package-manifest.json  # ctrlX OS integration manifest
+├── libs/
+│   ├── libcomm_datalayer.so     # Bundled Data Layer shared library
+│   └── libstdc++.so.6           # Bundled C++ runtime
 ├── snap/
-│   ├── snapcraft.yaml           # Snap packaging configuration
-│   └── local/
-│       └── packagemanifest.json # ctrlX Store metadata
+│   └── snapcraft.yaml           # Snap packaging configuration
 ├── requirements.txt             # Python dependencies
 └── README.md
 ```
 
 ---
 
-## Development setup
+## Development Setup
 
 ### Prerequisites
 
 - Python 3.10+
 - [ctrlX Automation SDK](https://github.com/boschrexroth/ctrlx-automation-sdk)
-- A ctrlX device or the ctrlX Works simulation
+- A ctrlX device or [ctrlX Works](https://www.boschrexroth.com/ctrlx-automation) simulation
 
 ### Install dependencies
 
@@ -47,25 +62,25 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### Run locally (against a ctrlX device or simulation)
+### Run locally against ctrlX Works (default)
 
 ```bash
-export DATALAYER_HOST=192.168.1.1   # IP of your ctrlX device
+# ctrlX Works listens on 10.0.2.2 by default
+python3 app/main.py
+```
+
+### Run against a physical ctrlX device
+
+```bash
+export DATALAYER_HOST=192.168.1.1
 export DATALAYER_USER=boschrexroth
 export DATALAYER_PASSWORD=boschrexroth
 python3 app/main.py
 ```
 
-### Run against ctrlX Works (local simulation, default)
-
-```bash
-# ctrlX Works listens on 10.0.2.2:2069 by default
-python3 app/main.py
-```
-
 ---
 
-## Build and install as snap
+## Build and Install
 
 ### Prerequisites
 
@@ -75,22 +90,33 @@ sudo snap install lxd
 sudo lxd init --auto
 ```
 
-### Build
+### Build the snap
 
 ```bash
 snapcraft
 ```
 
-This creates a `.snap` file, e.g. `ctrlx-datalayer-reader_1.0.0_amd64.snap`.
+This produces e.g. `ctrlx-datalayer-reader_1.0.3_amd64.snap`.
 
-### Install on ctrlX device
+### Install via Device Admin (recommended)
 
-Transfer the `.snap` file to your ctrlX device and install it:
+Upload the `.snap` file through the ctrlX OS Device Admin web interface
+under **Settings → Apps & Services → Install**.
+
+### Install via CLI (sideload)
 
 ```bash
-scp ctrlx-datalayer-reader_1.0.0_amd64.snap user@<ctrlX-IP>:/tmp/
-ssh user@<ctrlX-IP>
-sudo snap install /tmp/ctrlx-datalayer-reader_1.0.0_amd64.snap --dangerous
+scp ctrlx-datalayer-reader_1.0.3_amd64.snap rexroot@<ctrlX-IP>:/tmp/
+ssh rexroot@<ctrlX-IP>
+sudo snap install /tmp/ctrlx-datalayer-reader_1.0.3_amd64.snap --dangerous
+
+# Connect snap interfaces manually after sideload
+snap connect ctrlx-datalayer-reader:datalayer rexroth-automationcore:datalayer
+snap connect rexroth-deviceadmin:package-assets ctrlx-datalayer-reader:package-assets
+snap connect rexroth-deviceadmin:package-run ctrlx-datalayer-reader:package-run
+
+# Restart Device Admin to pick up the new manifest
+sudo snap restart rexroth-deviceadmin
 ```
 
 ### Check logs
@@ -103,17 +129,20 @@ sudo snap logs ctrlx-datalayer-reader -f
 
 ## Customization
 
-To read different Data Layer nodes, edit the `NODES_TO_READ` list in `app/main.py`:
+To read additional Data Layer nodes, add entries to `NODES_FLOAT` or `NODES_INT`
+in `app/main.py` and extend the HTML dashboard accordingly.
 
 ```python
-NODES_TO_READ = [
-    "motion/axs/Axis_1/state/values/actual/pos",
-    "plc/app/Application/sym/GVL/myVariable",
-    # Add more nodes here...
-]
-```
+NODES_FLOAT = {
+    "cpu_percent": "framework/metrics/system/cpu-utilisation-percent",
+    # add more float nodes here
+}
 
-Adjust the read interval with `READ_INTERVAL_SECONDS`.
+NODES_INT = {
+    "plc_counter": "plc/app/Application/sym/GVL/gCounter",
+    # add more int nodes here
+}
+```
 
 ---
 
