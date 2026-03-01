@@ -87,8 +87,6 @@ parts:
     source: .
     python-requirements:
       - requirements.txt
-    stage-packages:
-      - libcomm-datalayer
 
   app:
     plugin: dump
